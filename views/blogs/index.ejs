@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div>All Blogs</div>
+    <a href="/blogs/new">Add new blog</a>
+    <%for (let blog of blogs) {%>
+    <a href="/blogs/<%=blog.id%>"><h4><%= blog.title %></h4></a>
+    <%}%>
+  </body>
+</html>
