@@ -3,6 +3,9 @@ const mongoose = require("mongoose");
 const path = require("path");
 const methodOverride = require("method-override");
 const Blog = require("./models/Blog");
+const AppError = require("./utils/AppError");
+const catchAsync = require("./utils/catchAsync");
+const { validateBlog } = require("./utils/middlewares");
 const app = express();
 
 mongoose
@@ -25,51 +28,71 @@ app.get("/", (req, res) => {
   res.render("home");
 });
 // INDEX - ALL BLOGS
-app.get("/blogs", async (req, res) => {
-  const blogs = await Blog.find({});
-  res.render("blogs/index", { blogs });
-});
+app.get(
+  "/blogs",
+  catchAsync(async (req, res, next) => {
+    const blogs = await Blog.find({});
+    res.render("blogs/index", { blogs });
+  })
+);
 // NEW
 app.get("/blogs/new", (req, res) => {
   res.render("blogs/new");
 });
 
-app.post("/blogs", async (req, res) => {
-  const blog = await Blog.create(req.body);
-  res.redirect(`/blogs/${blog.id}`);
-});
+app.post(
+  "/blogs",
+  validateBlog,
+  catchAsync(async (req, res) => {
+    const blog = await Blog.create(req.body);
+    res.redirect(`/blogs/${blog.id}`);
+  })
+);
 
 // SHOW
-app.get("/blogs/:id", async (req, res) => {
-  const blog = await Blog.findById(req.params.id);
-  res.render("blogs/show", { blog });
-});
+app.get(
+  "/blogs/:id",
+  catchAsync(async (req, res, next) => {
+    const blog = await Blog.findById(req.params.id);
+    res.render("blogs/show", { blog });
+  })
+);
 
 // UPDATE
-app.get("/blogs/:id/edit", async (req, res) => {
-  const blog = await Blog.findById(req.params.id);
-  res.render("blogs/edit", { blog });
-});
+app.get(
+  "/blogs/:id/edit",
+  catchAsync(async (req, res) => {
+    const blog = await Blog.findById(req.params.id);
+    res.render("blogs/edit", { blog });
+  })
+);
 
-app.put("/blogs/:id", async (req, res) => {
-  const blog = await Blog.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-  });
-  res.redirect(`/blogs/${blog.id}`);
-});
+app.put(
+  "/blogs/:id",
+  validateBlog,
+  catchAsync(async (req, res) => {
+    const blog = await Blog.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    });
+    res.redirect(`/blogs/${blog.id}`);
+  })
+);
 
-app.delete("/blogs/:id", async (req, res) => {
-  await Blog.findByIdAndDelete(req.params.id);
-  res.redirect("/blogs");
-});
+app.delete(
+  "/blogs/:id",
+  catchAsync(async (req, res) => {
+    await Blog.findByIdAndDelete(req.params.id);
+    res.redirect("/blogs");
+  })
+);
 
 app.all("*", (req, res, next) => {
-  next(new Error("Page not found"));
+  next(new AppError("Page not found", 404));
 });
 
 app.use((error, req, res, next) => {
-  const { message = "Something went wrong!" } = error;
-  res.status(500).send(message);
+  const { message = "Something went wrong!", statusCode = 500 } = error;
+  res.status(statusCode).send(message);
 });
 
 app.listen(3000, () => {
