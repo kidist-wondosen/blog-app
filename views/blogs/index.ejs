@@ -1,15 +1,26 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
-  </head>
-  <body>
-    <div>All Blogs</div>
-    <a href="/blogs/new">Add new blog</a>
+<% layout("layouts/boilerplate") -%>
+<div class="row">
+  <div class="col-6 offset-3">
+    <h1 class="mt-4 mb-5 text-center">All Blogs</h1>
     <%for (let blog of blogs) {%>
-    <a href="/blogs/<%=blog.id%>"><h4><%= blog.title %></h4></a>
+    <div class="card">
+      <div class="row">
+        <div class="col-8">
+          <div class="card-body">
+            <h5 class="card-title"><%=blog.title%></h5>
+            <p class="text-muted"><%=blog.subtitle%></p>
+            <a class="btn btn-primary" href="/blogs/<%=blog.id%>">View blog</a>
+          </div>
+        </div>
+        <div class="col-4">
+          <img
+            class="img-thumbnail object-fit-cover h-100"
+            src="<%=blog.image%>"
+            height="400"
+          />
+        </div>
+      </div>
+    </div>
     <%}%>
-  </body>
-</html>
+  </div>
+</div>

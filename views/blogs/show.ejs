@@ -1,18 +1,18 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
-  </head>
-  <body>
-    <h1><%= blog.title %></h1>
-    <h2><%= blog.subtitle%></h2>
+<% layout("layouts/boilerplate") -%>
+<div class="row">
+  <div class="col-6 offset-3">
+    <h2><%= blog.title %></h2>
+    <h5 class="text-muted"><%= blog.subtitle%></h5>
+    <hr class="mb-5" />
+    <img class="img-fluid" src="<%=blog.image%>" />
     <p><%= blog.content%></p>
-    <a href="/blogs/<%=blog.id%>/edit">Edit</a>
-    <form action="/blogs/<%=blog.id%>?_method=DELETE" method="POST">
-      <button type="submit">Delete</button>
+    <a class="btn btn-warning" href="/blogs/<%=blog.id%>/edit">Edit</a>
+    <form
+      class="d-inline"
+      action="/blogs/<%=blog.id%>?_method=DELETE"
+      method="POST"
+    >
+      <button class="btn btn-danger" type="submit">Delete</button>
     </form>
-    <a href="/blogs">All blogs</a>
-  </body>
-</html>
+  </div>
+</div>

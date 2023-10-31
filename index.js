@@ -6,6 +6,7 @@ const Blog = require("./models/Blog");
 const AppError = require("./utils/AppError");
 const catchAsync = require("./utils/catchAsync");
 const { validateBlog } = require("./utils/middlewares");
+const ejsMate = require("ejs-mate");
 const app = express();
 
 mongoose
@@ -17,6 +18,7 @@ mongoose.connection.on("error", (error) =>
 );
 mongoose.connection.once("open", () => console.log("Database connected"));
 
+app.engine("ejs", ejsMate);
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
