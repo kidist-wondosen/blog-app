@@ -1,5 +1,5 @@
 <nav class="navbar navbar-dark navbar-expand-lg bg-dark">
-  <div class="container-fluid">
+  <div class="container-fluid" style="max-width: 1200px">
     <a class="navbar-brand" href="#">Blog App</a>
     <button
       class="navbar-toggler"
@@ -18,6 +18,39 @@
         <a class="nav-link" href="/blogs">Blogs</a>
         <a class="nav-link" href="/blogs/new">Add Blog</a>
       </div>
+      <div class="navbar-nav ms-auto">
+        <%if (!currentUser) {%>
+        <a class="nav-link" href="/register">Register</a>
+        <a class="nav-link" href="/login">Login</a>
+      </div>
+      <%}%> <%if (currentUser) {%>
+      <div class="navbar-nav ms-auto me-5">
+        <ul class="navbar-nav">
+          <li class="nav-item dropdown">
+            <a
+              class="nav-link dropdown-toggle"
+              href="#"
+              id="navbarDarkDropdownMenuLink"
+              role="button"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
+              <img
+                class="img-fluid rounded-circle m-0"
+                style="height: 32px; width: 32px; object-fit: cover"
+                src="<%=currentUser.image%>"
+              />
+            </a>
+            <ul
+              class="dropdown-menu dropdown-menu-dark"
+              aria-labelledby="navbarDarkDropdownMenuLink"
+            >
+              <li><a class="dropdown-item" href="/logout">Logout</a></li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+      <%}%>
     </div>
   </div>
 </nav>
