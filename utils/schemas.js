@@ -22,3 +22,7 @@ module.exports.userSchema = Joi.object({
   username: Joi.string().min(3).max(40).required(),
   password: Joi.string().pattern(passwordPattern).required(),
 });
+
+module.exports.commentSchema = Joi.object({
+  content: Joi.string().required(),
+});

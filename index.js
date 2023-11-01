@@ -11,6 +11,8 @@ const {
   validateUser,
   isLoggedIn,
   isBlogAuthor,
+  validateComment,
+  isCommentAuthor,
 } = require("./utils/middlewares");
 const ejsMate = require("ejs-mate");
 const session = require("express-session");
@@ -20,6 +22,7 @@ const passport = require("passport");
 const LocalStrategy = require("passport-local");
 const flash = require("connect-flash");
 const User = require("./models/User");
+const Comment = require("./models/Comment");
 const app = express();
 
 mongoose
@@ -76,7 +79,19 @@ app.get("/", (req, res) => {
 app.get(
   "/blogs",
   catchAsync(async (req, res, next) => {
-    const blogs = await Blog.find({}).populate("author");
+    const blogs = await Blog.find({})
+      .populate({
+        path: "author",
+        select: "username email image",
+      })
+      .populate({
+        path: "comments",
+        populate: {
+          path: "author",
+          model: "User",
+          select: "username email image",
+        },
+      });
     res.render("blogs/index", { blogs });
   })
 );
@@ -103,8 +118,20 @@ app.post(
 app.get(
   "/blogs/:id",
   catchAsync(async (req, res, next) => {
-    const blog = await Blog.findById(req.params.id).populate("author");
-    res.render("blogs/show", { blog });
+    const blog = await Blog.findById(req.params.id)
+      .populate({
+        path: "author",
+        select: "username email image",
+      })
+      .populate({
+        path: "comments",
+        populate: {
+          path: "author",
+          model: "User",
+          select: "username email image",
+        },
+      });
+    res.render("blogs/show", { blog, leaveComment: false });
   })
 );
 
@@ -114,7 +141,19 @@ app.get(
   isLoggedIn,
   isBlogAuthor,
   catchAsync(async (req, res) => {
-    const blog = await Blog.findById(req.params.id).populate("author");
+    const blog = await Blog.findById(req.params.id)
+      .populate({
+        path: "author",
+        select: "username email image",
+      })
+      .populate({
+        path: "comments",
+        populate: {
+          path: "author",
+          model: "User",
+          select: "username email image",
+        },
+      });
     res.render("blogs/edit", { blog });
   })
 );
@@ -128,7 +167,19 @@ app.put(
     const blog = await Blog.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
-    }).populate("author");
+    })
+      .populate({
+        path: "author",
+        select: "username email image",
+      })
+      .populate({
+        path: "comments",
+        populate: {
+          path: "author",
+          model: "User",
+          select: "username email image",
+        },
+      });
     req.flash("success", "Successfully updated blog");
     res.redirect(`/blogs/${blog.id}`);
   })
@@ -142,6 +193,57 @@ app.delete(
     await Blog.findByIdAndDelete(req.params.id);
     req.flash("success", "Successfully removed blog");
     res.redirect("/blogs");
+  })
+);
+
+// COMMENTS
+app.get(
+  "/blogs/:id/comments",
+  isLoggedIn,
+  catchAsync(async (req, res) => {
+    const blog = await Blog.findById(req.params.id)
+      .populate({
+        path: "author",
+        select: "-password",
+      })
+      .populate({
+        path: "comments",
+        populate: {
+          path: "author",
+          select: "-password",
+        },
+      });
+    res.render("blogs/show", { blog, leaveComment: true });
+  })
+);
+
+app.post(
+  "/blogs/:id/comments",
+  isLoggedIn,
+  validateComment,
+  catchAsync(async (req, res) => {
+    const blog = await Blog.findById(req.params.id);
+    const comment = new Comment(req.body);
+    comment.author = req.user;
+    blog.comments.push(comment);
+    await Promise.all([blog.save(), comment.save()]);
+    req.flash("success", "Successfully added comment");
+    res.redirect(`/blogs/${blog.id}`);
+  })
+);
+
+app.delete(
+  "/blogs/:id/comments/:commentId",
+  isLoggedIn,
+  isCommentAuthor,
+  catchAsync(async (req, res) => {
+    const { id, commentId } = req.params;
+    const blog = await Blog.findByIdAndUpdate(id, {
+      $pull: { comments: commentId },
+    });
+    await Comment.findByIdAndDelete(commentId);
+    req.flash("success", "Successuflly removed comment");
+    res.redirect(`/blogs/${blog.id}`);
   })
 );
 
@@ -165,6 +267,7 @@ app.post(
     });
   })
 );
+
 // LOGIN
 app.get("/login", (req, res) => {
   res.render("user/login");

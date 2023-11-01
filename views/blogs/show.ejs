@@ -20,13 +20,64 @@
     <hr class="mb-5" />
     <img class="img-fluid" src="<%=blog.image%>" />
     <p><%= blog.content%></p>
-    <%if (blog.author._id.equals(currentUser.id)) {%>
-    <div class="d-flex gap-2">
+    <%if (currentUser && blog.author._id.equals(currentUser.id)) {%>
+    <div class="d-flex gap-2 mb-5">
       <a class="btn btn-warning" href="/blogs/<%=blog.id%>/edit">Edit</a>
       <form action="/blogs/<%=blog.id%>?_method=DELETE" method="POST">
         <button class="btn btn-danger" type="submit">Delete</button>
       </form>
     </div>
-    <%}%>
+    <%}%> <%if (!leaveComment) {%>
+    <a class="btn btn-light mb-4" href="/blogs/<%=blog.id%>/comments"
+      >Leave Comment</a
+    >
+    <%}%> <%if (leaveComment) {%>
+    <form
+      action="/blogs/<%=blog.id%>/comments"
+      method="POST"
+      class="mb-5 needs-validation"
+      novalidate
+    >
+      <textarea
+        class="form-control mb-3"
+        name="content"
+        rows="5"
+        placeholder="Leave your comment here..."
+        required
+      ></textarea>
+      <button type="submit" class="btn btn-success">Comment</button>
+    </form>
+    <%}%> <% if (blog.comments.length) { %> <%for (let comment of blog.comments)
+    {%>
+    <div class="card mb-3">
+      <div class="card-body">
+        <div class="d-flex gap-3 mt-4">
+          <img
+            src="<%=comment.author.image%>"
+            class="img-fluid rounded-circle"
+            style="width: 46px; height: 46px; object-fit: cover"
+          />
+          <div>
+            <h5 class="mb-0"><%=comment.author.username%></h5>
+            <p>
+              <%=new Date(comment.updatedAt).toLocaleDateString("en-US", {day:
+              "2-digit", month: "short", year: "numeric"})%>
+            </p>
+          </div>
+        </div>
+        <p><%=comment.content%></p>
+        <%if (currentUser && comment.author._id.equals(currentUser.id)) {%>
+        <form
+          action="/blogs/<%=blog.id%>/comments/<%=comment._id%>?_method=DELETE"
+          method="POST"
+        >
+          <button type="submit" class="btn btn-danger mt-2 btn-sm">
+            Delete
+          </button>
+        </form>
+        <%}%>
+      </div>
+    </div>
+    <%}%> <% } %>
   </div>
 </div>
