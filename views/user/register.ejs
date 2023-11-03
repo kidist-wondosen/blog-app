@@ -2,7 +2,13 @@
 <div class="row">
   <div class="col-4 offset-4">
     <h1 class="mt-4 mb-5 text-center">Sign up</h1>
-    <form class="needs-validation" action="/register" method="POST" novalidate>
+    <form
+      class="needs-validation"
+      action="/register"
+      method="POST"
+      enctype="multipart/form-data"
+      novalidate
+    >
       <div class="mb-3">
         <label class="form-label" for="username">Username</label>
         <input
@@ -18,8 +24,15 @@
         <input class="form-control" id="email" name="email" required />
       </div>
       <div class="mb-3">
-        <label class="form-label" for="image">Image url</label>
-        <input class="form-control" id="image" name="image" required />
+        <label class="form-label" for="image">Image</label>
+        <input
+          class="form-control"
+          id="image"
+          name="image"
+          type="file"
+          accept=".jpeg,.jpg,.png"
+          required
+        />
       </div>
       <div class="mb-3">
         <label class="form-label" for="password">Password</label>

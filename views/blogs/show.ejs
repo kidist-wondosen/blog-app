@@ -18,7 +18,10 @@
       </div>
     </div>
     <hr class="mb-5" />
-    <img class="img-fluid" src="<%=blog.image%>" />
+    <img
+      class="img-fluid"
+      src="http://127.0.0.1:3000/<%=blog.image.replace(/\\/g, '/')%>"
+    />
     <p><%= blog.content%></p>
     <%if (currentUser && blog.author._id.equals(currentUser.id)) {%>
     <div class="d-flex gap-2 mb-5">

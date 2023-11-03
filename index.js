@@ -21,8 +21,10 @@ const bcrypt = require("bcryptjs");
 const passport = require("passport");
 const LocalStrategy = require("passport-local");
 const flash = require("connect-flash");
+const fs = require("fs");
 const User = require("./models/User");
 const Comment = require("./models/Comment");
+const imageUpload = require("./utils/imageUpload");
 const app = express();
 
 mongoose
@@ -39,6 +41,7 @@ app.set("view engine", "ejs");
 
 app.set("views", path.join(__dirname, "views"));
 
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use(methodOverride("_method"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -104,10 +107,13 @@ app.get("/blogs/new", isLoggedIn, (req, res) => {
 app.post(
   "/blogs",
   isLoggedIn,
+  imageUpload.single("image"),
   validateBlog,
   catchAsync(async (req, res) => {
-    const blog = new Blog(req.body);
+    const { title, subtitle, content } = req.body;
+    const blog = new Blog({ title, subtitle, content });
     blog.author = req.user;
+    blog.image = req.file.path;
     await blog.save();
     req.flash("success", "Successfully added blog");
     res.redirect(`/blogs/${blog.id}`);
@@ -162,12 +168,18 @@ app.put(
   "/blogs/:id",
   isLoggedIn,
   isBlogAuthor,
+  imageUpload.single("image"),
   validateBlog,
-  catchAsync(async (req, res) => {
-    const blog = await Blog.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    })
+  catchAsync(async (req, res, next) => {
+    const { title, subtitle, content } = req.body;
+    const blog = await Blog.findByIdAndUpdate(
+      req.params.id,
+      { title, subtitle, content },
+      {
+        new: true,
+        runValidators: true,
+      }
+    )
       .populate({
         path: "author",
         select: "username email image",
@@ -180,8 +192,15 @@ app.put(
           select: "username email image",
         },
       });
-    req.flash("success", "Successfully updated blog");
-    res.redirect(`/blogs/${blog.id}`);
+    if (req.file) {
+      fs.unlink(blog.image, async (error) => {
+        if (error) return next(error);
+        blog.image = req.file.path;
+        await blog.save();
+        req.flash("success", "Successfully updated blog");
+        res.redirect(`/blogs/${blog.id}`);
+      });
+    }
   })
 );
 
@@ -255,10 +274,11 @@ app.get("/register", (req, res) => {
 
 app.post(
   "/register",
+  imageUpload.single("image"),
   validatePerson,
   catchAsync(async (req, res) => {
-    const { username, email, password, image } = req.body;
-    const user = new User({ username, email, image });
+    const { username, email, password } = req.body;
+    const user = new User({ username, email, image: req.file.path });
     const newUser = await User.register(user, password);
     req.login(newUser, (error) => {
       if (error) return next(error);
@@ -300,7 +320,13 @@ app.all("*", (req, res, next) => {
 });
 
 app.use((error, req, res, next) => {
-  const { message = "Something went wrong!", statusCode = 500 } = error;
+  if (req.file) {
+    fs.unlink(req.file.path, (error) => {
+      if (error) throw error;
+    });
+  }
+  const { statusCode = 500 } = error;
+  if (!error.message) error.message = "Something went wrong!";
   res.status(statusCode).render("error", { error });
 });
 

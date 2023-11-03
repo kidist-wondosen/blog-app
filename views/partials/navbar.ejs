@@ -38,7 +38,7 @@
               <img
                 class="img-fluid rounded-circle m-0"
                 style="height: 32px; width: 32px; object-fit: cover"
-                src="<%=currentUser.image%>"
+                src="http://127.0.0.1:3000/<%=currentUser.image.replace(/\\/g, '/')%>"
               />
             </a>
             <ul

@@ -2,7 +2,13 @@
 <div class="row">
   <div class="col-4 offset-4">
     <h1 class="mb-5 mt-4 text-center">Add Blog</h1>
-    <form class="needs-validation" action="/blogs" method="POST" novalidate>
+    <form
+      class="needs-validation"
+      action="/blogs"
+      method="POST"
+      enctype="multipart/form-data"
+      novalidate
+    >
       <div class="mb-3">
         <label class="form-label" for="title">Title</label>
         <input class="form-control" id="title" name="title" required />
@@ -13,7 +19,14 @@
       </div>
       <div class="mb-3">
         <label class="form-label" for="image">Image</label>
-        <input class="form-control" id="image" name="image" required />
+        <input
+          class="form-control"
+          id="image"
+          name="image"
+          type="file"
+          accept=".jpeg,.jpg,.png"
+          required
+        />
       </div>
       <div class="mb-3">
         <label class="form-label" for="content">Content</label>
